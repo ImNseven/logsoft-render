@@ -1,0 +1,6 @@
+# Claude config and rules
+CLAUDE.md
+.claude/
+
+# Documentation
+*.md
