@@ -1,6 +1,17 @@
-# Claude config and rules
+node_modules/
+dist/
+.env
+*.env.local
+
+*.md
 CLAUDE.md
 .claude/
 
-# Documentation
-*.md
+.DS_Store
+Thumbs.db
+
+*.log
+npm-debug.log*
+
+coverage/
+.nyc_output/
