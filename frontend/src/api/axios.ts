@@ -1,4 +1,5 @@
 import axios, { InternalAxiosRequestConfig } from 'axios';
+import { message } from 'antd';
 
 const ACCESS_TOKEN_KEY = 'access_token';
 const REFRESH_TOKEN_KEY = 'refresh_token';
@@ -50,12 +51,21 @@ function processQueue(error: unknown, token: string | null) {
   failedQueue = [];
 }
 
+function showApiError(error: any) {
+  const status = error?.response?.status;
+  if (status === 401) return;
+  const raw = error?.response?.data?.message;
+  const text = Array.isArray(raw) ? raw.join('; ') : raw;
+  message.error(text ?? 'Произошла ошибка');
+}
+
 api.interceptors.response.use(
   (response) => response,
   async (error) => {
     const original = error.config as InternalAxiosRequestConfig & { _retry?: boolean };
 
     if (error.response?.status !== 401 || original._retry) {
+      showApiError(error);
       return Promise.reject(error);
     }
 

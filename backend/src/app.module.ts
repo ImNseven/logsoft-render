@@ -8,6 +8,9 @@ import { OriginPointsModule } from './modules/origin-points/origin-points.module
 import { TransportTypesModule } from './modules/transport-types/transport-types.module';
 import { RedisModule } from './modules/redis/redis.module';
 import { AuthModule } from './modules/auth/auth.module';
+import { LoadsModule } from './modules/loads/loads.module';
+import { VehiclesModule } from './modules/vehicles/vehicles.module';
+import { S3Module } from './modules/s3/s3.module';
 
 @Module({
   imports: [
@@ -33,6 +36,9 @@ import { AuthModule } from './modules/auth/auth.module';
     OriginPointsModule,
     TransportTypesModule,
     AuthModule,
+    LoadsModule,
+    VehiclesModule,
+    S3Module,
   ],
   controllers: [AppController],
 })

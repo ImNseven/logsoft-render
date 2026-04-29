@@ -1,34 +1,63 @@
-import { Card, Col, Row, Typography } from 'antd';
-import {
-  InboxOutlined,
-  CarOutlined,
-  FileTextOutlined,
-  TeamOutlined,
-} from '@ant-design/icons';
+import { Card, Col, Row, Statistic, Typography } from 'antd';
+import { CarOutlined, InboxOutlined, TruckOutlined } from '@ant-design/icons';
+import { useNavigate } from 'react-router-dom';
+import { useQuery } from '@tanstack/react-query';
 import { useAuthStore } from '../store/useAuthStore';
+import { loadsApi } from '../api/loads.api';
+import { vehiclesApi } from '../api/vehicles.api';
 
-const { Title, Text } = Typography;
+const { Title } = Typography;
 
-const ROLE_CARDS: Record<string, Array<{ title: string; icon: React.ReactNode }>> = {
-  shipper: [
-    { title: 'Мои грузы', icon: <InboxOutlined style={{ fontSize: 32, color: '#1677ff' }} /> },
-    { title: 'Мои сделки', icon: <FileTextOutlined style={{ fontSize: 32, color: '#1677ff' }} /> },
-  ],
-  carrier: [
-    { title: 'Мои машины', icon: <CarOutlined style={{ fontSize: 32, color: '#52c41a' }} /> },
-    { title: 'Мои сделки', icon: <FileTextOutlined style={{ fontSize: 32, color: '#52c41a' }} /> },
-  ],
-  dispatcher: [
-    { title: 'Все грузы', icon: <InboxOutlined style={{ fontSize: 32, color: '#fa8c16' }} /> },
-    { title: 'Все машины', icon: <CarOutlined style={{ fontSize: 32, color: '#fa8c16' }} /> },
-    { title: 'Сделки', icon: <FileTextOutlined style={{ fontSize: 32, color: '#fa8c16' }} /> },
-    { title: 'Пользователи', icon: <TeamOutlined style={{ fontSize: 32, color: '#fa8c16' }} /> },
-  ],
-};
+function useShipperLoadsCount(enabled: boolean) {
+  return useQuery({
+    queryKey: ['stats', 'loads', 'my', 'active'],
+    queryFn: () =>
+      loadsApi.getMy({ limit: 1, status: 'active' }).then((r) => r.data.total),
+    enabled,
+  });
+}
+
+function useDispatcherActiveLoadsCount(enabled: boolean) {
+  return useQuery({
+    queryKey: ['stats', 'loads', 'all', 'active'],
+    queryFn: () =>
+      loadsApi.getAll({ limit: 1, status: 'active' }).then((r) => r.data.total),
+    enabled,
+  });
+}
+
+function useCarrierVehiclesCount(enabled: boolean) {
+  return useQuery({
+    queryKey: ['stats', 'vehicles', 'my'],
+    queryFn: () =>
+      vehiclesApi.getMy({ limit: 1 }).then((r) => r.data.total),
+    enabled,
+  });
+}
+
+function useAllVehiclesCount(enabled: boolean) {
+  return useQuery({
+    queryKey: ['stats', 'vehicles', 'all'],
+    queryFn: () =>
+      vehiclesApi.getAll({ limit: 1 }).then((r) => r.data.total),
+    enabled,
+  });
+}
 
 export default function DashboardPage() {
   const user = useAuthStore((s) => s.user);
-  const cards = user ? ROLE_CARDS[user.role] || [] : [];
+  const navigate = useNavigate();
+  const role = user?.role;
+  const isAdmin = !!user?.is_admin;
+
+  const isShipper = role === 'shipper';
+  const isCarrier = role === 'carrier';
+  const isDispatcher = role === 'dispatcher' || isAdmin;
+
+  const shipperLoads = useShipperLoadsCount(isShipper && !isAdmin);
+  const dispatcherLoads = useDispatcherActiveLoadsCount(isDispatcher);
+  const carrierVehicles = useCarrierVehiclesCount(isCarrier && !isAdmin);
+  const allVehicles = useAllVehiclesCount(isDispatcher);
 
   return (
     <div>
@@ -37,15 +66,57 @@ export default function DashboardPage() {
       </Title>
 
       <Row gutter={[16, 16]} style={{ marginTop: 24 }}>
-        {cards.map((card) => (
-          <Col xs={24} sm={12} lg={8} xl={6} key={card.title}>
-            <Card hoverable style={{ textAlign: 'center', minHeight: 160 }}>
-              <div style={{ marginBottom: 16 }}>{card.icon}</div>
-              <Title level={5} style={{ margin: 0 }}>{card.title}</Title>
-              <Text type="secondary">Скоро</Text>
+        {isShipper && !isAdmin && (
+          <Col xs={24} sm={12} lg={8}>
+            <Card hoverable onClick={() => navigate('/loads')}>
+              <Statistic
+                title="Мои грузы"
+                value={shipperLoads.data ?? 0}
+                suffix="активных"
+                loading={shipperLoads.isLoading}
+                prefix={<InboxOutlined style={{ color: '#1677ff' }} />}
+              />
             </Card>
           </Col>
-        ))}
+        )}
+
+        {isCarrier && !isAdmin && (
+          <Col xs={24} sm={12} lg={8}>
+            <Card hoverable onClick={() => navigate('/vehicles')}>
+              <Statistic
+                title="Мои машины"
+                value={carrierVehicles.data ?? 0}
+                loading={carrierVehicles.isLoading}
+                prefix={<TruckOutlined style={{ color: '#52c41a' }} />}
+              />
+            </Card>
+          </Col>
+        )}
+
+        {isDispatcher && (
+          <>
+            <Col xs={24} sm={12} lg={8}>
+              <Card hoverable onClick={() => navigate('/loads')}>
+                <Statistic
+                  title="Активных грузов"
+                  value={dispatcherLoads.data ?? 0}
+                  loading={dispatcherLoads.isLoading}
+                  prefix={<CarOutlined style={{ color: '#fa8c16' }} />}
+                />
+              </Card>
+            </Col>
+            <Col xs={24} sm={12} lg={8}>
+              <Card hoverable onClick={() => navigate('/vehicles')}>
+                <Statistic
+                  title="Машин в системе"
+                  value={allVehicles.data ?? 0}
+                  loading={allVehicles.isLoading}
+                  prefix={<TruckOutlined style={{ color: '#fa8c16' }} />}
+                />
+              </Card>
+            </Col>
+          </>
+        )}
       </Row>
     </div>
   );

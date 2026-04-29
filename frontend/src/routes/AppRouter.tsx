@@ -6,6 +6,9 @@ import RegisterPage from '../pages/RegisterPage';
 import DashboardPage from '../pages/DashboardPage';
 import ProfilePage from '../pages/ProfilePage';
 import UsersListPage from '../pages/UsersListPage';
+import LoadsListPage from '../pages/loads/LoadsListPage';
+import VehiclesListPage from '../pages/vehicles/VehiclesListPage';
+import VehicleDetailPage from '../pages/vehicles/VehicleDetailPage';
 
 export default function AppRouter() {
   return (
@@ -20,6 +23,15 @@ export default function AppRouter() {
 
           <Route element={<ProtectedRoute allowedRoles={['dispatcher']} />}>
             <Route path="/users" element={<UsersListPage />} />
+          </Route>
+
+          <Route element={<ProtectedRoute allowedRoles={['shipper', 'dispatcher']} />}>
+            <Route path="/loads" element={<LoadsListPage />} />
+          </Route>
+
+          <Route element={<ProtectedRoute allowedRoles={['carrier', 'dispatcher']} />}>
+            <Route path="/vehicles" element={<VehiclesListPage />} />
+            <Route path="/vehicles/:id" element={<VehicleDetailPage />} />
           </Route>
         </Route>
       </Route>
