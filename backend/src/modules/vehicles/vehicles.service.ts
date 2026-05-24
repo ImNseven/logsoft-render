@@ -8,11 +8,13 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Vehicle } from './entities/vehicle.entity';
 import { VehicleDocument } from './entities/vehicle-document.entity';
+import { Deal } from '../deals/entities/deal.entity';
 import { CreateVehicleDto } from './dto/create-vehicle.dto';
 import { UpdateVehicleDto } from './dto/update-vehicle.dto';
 import { QueryVehiclesDto } from './dto/query-vehicles.dto';
-import { DocType, UserRole } from '../../common/enums';
+import { DealStatus, DocType, UserRole } from '../../common/enums';
 import { S3Service } from '../s3/s3.service';
+import { ContactsVisibilityService } from '../../common/services/contacts-visibility.service';
 
 type ReqUser = { userId: string; role: UserRole; is_admin: boolean };
 
@@ -23,7 +25,10 @@ export class VehiclesService {
     private readonly vehiclesRepo: Repository<Vehicle>,
     @InjectRepository(VehicleDocument)
     private readonly docsRepo: Repository<VehicleDocument>,
+    @InjectRepository(Deal)
+    private readonly dealsRepo: Repository<Deal>,
     private readonly s3Service: S3Service,
+    private readonly contacts: ContactsVisibilityService,
   ) {}
 
   async create(dto: CreateVehicleDto, currentUser: ReqUser): Promise<Vehicle> {
@@ -40,7 +45,7 @@ export class VehiclesService {
     return this.vehiclesRepo.save(vehicle);
   }
 
-  async findAll(query: QueryVehiclesDto): Promise<{
+  async findAll(query: QueryVehiclesDto, currentUser?: ReqUser): Promise<{
     data: Vehicle[];
     total: number;
     page: number;
@@ -62,11 +67,14 @@ export class VehiclesService {
       .take(limit);
 
     const [data, total] = await qb.getManyAndCount();
+    if (currentUser) {
+      await this.contacts.maskMany(currentUser, data.map((v) => v.carrier));
+    }
     return { data, total, page, limit };
   }
 
-  async findMy(userId: string, query: QueryVehiclesDto) {
-    return this.findAll({ ...query, carrierId: userId });
+  async findMy(userId: string, query: QueryVehiclesDto, currentUser?: ReqUser) {
+    return this.findAll({ ...query, carrierId: userId }, currentUser);
   }
 
   async findOne(id: string, currentUser: ReqUser): Promise<Vehicle> {
@@ -81,6 +89,7 @@ export class VehiclesService {
     ) {
       throw new ForbiddenException('Нет доступа');
     }
+    await this.contacts.maskUser(currentUser, vehicle.carrier);
     return vehicle;
   }
 
@@ -97,6 +106,12 @@ export class VehiclesService {
   async deactivate(id: string, currentUser: ReqUser): Promise<Vehicle> {
     const vehicle = await this.findOne(id, currentUser);
     vehicle.isActive = false;
+    return this.vehiclesRepo.save(vehicle);
+  }
+
+  async activate(id: string, currentUser: ReqUser): Promise<Vehicle> {
+    const vehicle = await this.findOne(id, currentUser);
+    vehicle.isActive = true;
     return this.vehiclesRepo.save(vehicle);
   }
 
@@ -129,6 +144,17 @@ export class VehiclesService {
     currentUser: ReqUser,
   ): Promise<VehicleDocument[]> {
     await this.findOne(vehicleId, currentUser);
+    if (
+      currentUser.role === UserRole.SHIPPER &&
+      !currentUser.is_admin
+    ) {
+      const count = await this.dealsRepo.count({
+        where: { shipperId: currentUser.userId, vehicleId },
+      });
+      if (count === 0) {
+        throw new ForbiddenException('Нет доступа к документам этой машины');
+      }
+    }
     return this.docsRepo.find({
       where: { vehicleId },
       order: { createdAt: 'DESC' },
@@ -145,17 +171,23 @@ export class VehiclesService {
     });
     if (!doc) throw new NotFoundException('Документ не найден');
 
-    if (
-      currentUser.role === UserRole.CARRIER &&
-      doc.vehicle.carrierId !== currentUser.userId
-    ) {
-      throw new ForbiddenException('Нет доступа');
-    }
-
-    if (currentUser.role === UserRole.SHIPPER && !currentUser.is_admin) {
-      throw new ForbiddenException(
-        'Доступ к документам откроется после подтверждения оплаты по сделке',
-      );
+    if (currentUser.is_admin) {
+      // bypass
+    } else if (currentUser.role === UserRole.CARRIER) {
+      if (doc.vehicle.carrierId !== currentUser.userId) {
+        throw new ForbiddenException('Нет доступа');
+      }
+    } else if (currentUser.role === UserRole.SHIPPER) {
+      const count = await this.dealsRepo.count({
+        where: {
+          shipperId: currentUser.userId,
+          vehicleId: doc.vehicleId,
+          status: DealStatus.DOCUMENTS_REVEALED,
+        },
+      });
+      if (count === 0) {
+        throw new ForbiddenException('Доступ к документам откроется после раскрытия сделки');
+      }
     }
 
     const exists = await this.s3Service.fileExists(doc.fileKey);

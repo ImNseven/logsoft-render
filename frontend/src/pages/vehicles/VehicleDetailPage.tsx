@@ -21,6 +21,7 @@ import {
   DownloadOutlined,
   EditOutlined,
   StopOutlined,
+  CheckCircleOutlined,
 } from '@ant-design/icons';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import dayjs from 'dayjs';
@@ -66,6 +67,18 @@ export default function VehicleDetailPage() {
       message.error(
         err?.response?.data?.message ?? 'Не удалось деактивировать',
       );
+    },
+  });
+
+  const activateMutation = useMutation({
+    mutationFn: () => vehiclesApi.activate(id!).then((r) => r.data),
+    onSuccess: () => {
+      message.success('Машина активирована');
+      qc.invalidateQueries({ queryKey: ['vehicle', id] });
+      qc.invalidateQueries({ queryKey: ['vehicles'] });
+    },
+    onError: (err: any) => {
+      message.error(err?.response?.data?.message ?? 'Не удалось активировать');
     },
   });
 
@@ -207,8 +220,20 @@ export default function VehicleDetailPage() {
                 okButtonProps={{ danger: true }}
                 onConfirm={() => deactivateMutation.mutate()}
               >
-                <Button danger icon={<StopOutlined />}>
+                <Button danger icon={<StopOutlined />} loading={deactivateMutation.isPending}>
                   Деактивировать
+                </Button>
+              </Popconfirm>
+            )}
+            {canModify && !vehicle.isActive && (
+              <Popconfirm
+                title="Активировать машину?"
+                okText="Да"
+                cancelText="Нет"
+                onConfirm={() => activateMutation.mutate()}
+              >
+                <Button type="primary" icon={<CheckCircleOutlined />} loading={activateMutation.isPending}>
+                  Активировать
                 </Button>
               </Popconfirm>
             )}

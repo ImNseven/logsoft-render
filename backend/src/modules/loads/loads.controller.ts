@@ -39,8 +39,8 @@ export class LoadsController {
   @ApiOperation({ summary: 'Список всех грузов с фильтрами (dispatcher)' })
   @Roles(UserRole.DISPATCHER)
   @UseGuards(RolesGuard)
-  findAll(@Query() query: QueryLoadsDto) {
-    return this.loadsService.findAll(query);
+  findAll(@Query() query: QueryLoadsDto, @CurrentUser() user: any) {
+    return this.loadsService.findAll(query, user);
   }
 
   @Get('my')
@@ -48,7 +48,7 @@ export class LoadsController {
   @Roles(UserRole.SHIPPER)
   @UseGuards(RolesGuard)
   findMy(@Query() query: QueryLoadsDto, @CurrentUser() user: any) {
-    return this.loadsService.findMy(user.userId, query);
+    return this.loadsService.findMy(user.userId, query, user);
   }
 
   @Get(':id')

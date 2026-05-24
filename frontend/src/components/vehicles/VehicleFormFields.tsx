@@ -1,33 +1,11 @@
 import { Form, Input, InputNumber, Select } from 'antd';
 import { useTransportTypes } from '../../hooks/useLoads';
-import { useCarriers } from '../../hooks/useVehicles';
 
-interface Props {
-  showCarrier?: boolean;
-}
-
-export default function VehicleFormFields({ showCarrier = false }: Props) {
-  const { data: carriers, isLoading: carriersLoading } = useCarriers(showCarrier);
+export default function VehicleFormFields() {
   const { data: transportTypes, isLoading: ttLoading } = useTransportTypes();
 
   return (
     <>
-      {showCarrier && (
-        <Form.Item name="carrierId" label="Перевозчик">
-          <Select
-            placeholder="Оставьте пустым — текущий пользователь"
-            loading={carriersLoading}
-            allowClear
-            showSearch
-            optionFilterProp="label"
-            options={(carriers?.data ?? []).map((u) => ({
-              value: u.id,
-              label: u.full_name || u.company_name || u.phone,
-            }))}
-          />
-        </Form.Item>
-      )}
-
       <Form.Item
         name="plateNumber"
         label="Гос. номер"
@@ -39,7 +17,11 @@ export default function VehicleFormFields({ showCarrier = false }: Props) {
         <Input placeholder="AA1234BB" />
       </Form.Item>
 
-      <Form.Item name="transportTypeId" label="Тип транспорта">
+      <Form.Item
+        name="transportTypeId"
+        label="Тип транспорта"
+        rules={[{ required: true, message: 'Выберите тип транспорта' }]}
+      >
         <Select
           placeholder="Выберите тип"
           loading={ttLoading}
@@ -53,11 +35,15 @@ export default function VehicleFormFields({ showCarrier = false }: Props) {
         />
       </Form.Item>
 
-      <Form.Item name="capacityKg" label="Грузоподъёмность (кг)">
+      <Form.Item
+        name="capacityKg"
+        label="Грузоподъёмность, кг"
+        rules={[{ required: true, message: 'Укажите грузоподъёмность' }]}
+      >
         <InputNumber min={0} step={100} style={{ width: '100%' }} />
       </Form.Item>
 
-      <Form.Item name="specs" label="Характеристики">
+      <Form.Item name="specs" label="Характеристики (необязательно)">
         <Input.TextArea rows={3} maxLength={1000} showCount />
       </Form.Item>
     </>

@@ -42,12 +42,11 @@ export class UsersController {
   }
 
   @Get(':id')
-  @Roles(UserRole.DISPATCHER)
-  @ApiOperation({ summary: 'Get user by ID (dispatcher+)' })
+  @ApiOperation({ summary: 'Get user by ID (phone маскируется не-диспетчеру вне revealed-сделки)' })
   @ApiResponse({ status: 200, description: 'User by ID' })
   @ApiResponse({ status: 404, description: 'Not found' })
-  getUserById(@Param('id') id: string) {
-    return this.usersService.getUserById(id);
+  getUserById(@Param('id') id: string, @CurrentUser() user: any) {
+    return this.usersService.getUserById(id, user);
   }
 
   @Patch(':id')

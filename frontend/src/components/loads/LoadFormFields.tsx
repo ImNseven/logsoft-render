@@ -17,7 +17,7 @@ export default function LoadFormFields({ showShipper = false }: Props) {
   return (
     <>
       {showShipper && (
-        <Form.Item name="shipperId" label="Грузоотправитель">
+        <Form.Item name="shipperId" label="Грузоотправитель (необязательно)">
           <Select
             placeholder="Оставьте пустым — будет указан текущий пользователь"
             loading={shLoading}
@@ -54,7 +54,7 @@ export default function LoadFormFields({ showShipper = false }: Props) {
         <Input placeholder="Введите город или адрес" />
       </Form.Item>
 
-      <Form.Item name="transportTypeId" label="Тип транспорта">
+      <Form.Item name="transportTypeId" label="Тип транспорта (необязательно)">
         <Select
           placeholder="Выберите тип"
           loading={ttLoading}
@@ -65,15 +65,27 @@ export default function LoadFormFields({ showShipper = false }: Props) {
         />
       </Form.Item>
 
-      <Form.Item name="weightKg" label="Вес (кг)">
+      <Form.Item
+        name="weightKg"
+        label="Вес, кг"
+        rules={[{ required: true, message: 'Укажите вес' }]}
+      >
         <InputNumber min={0} step={100} style={{ width: '100%' }} />
       </Form.Item>
 
-      <Form.Item name="volumeM3" label="Объём (м³)">
+      <Form.Item
+        name="volumeM3"
+        label="Объём, м³"
+        rules={[{ required: true, message: 'Укажите объём' }]}
+      >
         <InputNumber min={0} step={0.1} style={{ width: '100%' }} />
       </Form.Item>
 
-      <Form.Item name="readyDate" label="Дата готовности">
+      <Form.Item
+        name="readyDate"
+        label="Дата готовности"
+        rules={[{ required: true, message: 'Укажите дату готовности' }]}
+      >
         <DatePicker
           style={{ width: '100%' }}
           format="DD.MM.YYYY"
@@ -81,7 +93,7 @@ export default function LoadFormFields({ showShipper = false }: Props) {
         />
       </Form.Item>
 
-      <Form.Item name="notes" label="Примечания">
+      <Form.Item name="notes" label="Примечания (необязательно)">
         <Input.TextArea rows={3} maxLength={1000} showCount />
       </Form.Item>
     </>

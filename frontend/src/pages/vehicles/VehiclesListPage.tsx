@@ -64,6 +64,17 @@ export default function VehiclesListPage() {
     },
   });
 
+  const activateMutation = useMutation({
+    mutationFn: (id: string) => vehiclesApi.activate(id).then((r) => r.data),
+    onSuccess: () => {
+      message.success('Машина активирована');
+      qc.invalidateQueries({ queryKey: ['vehicles'] });
+    },
+    onError: (err: any) => {
+      message.error(err?.response?.data?.message ?? 'Не удалось активировать');
+    },
+  });
+
   const columns: ColumnsType<Vehicle> = [
     { title: 'Гос. номер', dataIndex: 'plateNumber', key: 'plateNumber' },
     {
@@ -121,7 +132,7 @@ export default function VehiclesListPage() {
           <Link to={`/vehicles/${r.id}`}>
             <Button size="small">Открыть</Button>
           </Link>
-          {r.isActive && (
+          {r.isActive ? (
             <Popconfirm
               title="Деактивировать машину?"
               okText="Да"
@@ -131,6 +142,17 @@ export default function VehiclesListPage() {
             >
               <Button size="small" danger>
                 Деактивировать
+              </Button>
+            </Popconfirm>
+          ) : (
+            <Popconfirm
+              title="Активировать машину?"
+              okText="Да"
+              cancelText="Нет"
+              onConfirm={() => activateMutation.mutate(r.id)}
+            >
+              <Button size="small" type="primary">
+                Активировать
               </Button>
             </Popconfirm>
           )}

@@ -6,6 +6,7 @@ import {
   UserOutlined,
   CarOutlined,
   TruckOutlined,
+  DollarOutlined,
 } from '@ant-design/icons';
 import { useAuthStore } from '../../store/useAuthStore';
 import type { UserRole } from '../../types';
@@ -22,6 +23,7 @@ const allMenuItems: MenuItem[] = [
   { key: 'dashboard', icon: <DashboardOutlined />, label: 'Дашборд', path: '/dashboard', roles: 'all' },
   { key: 'loads', icon: <CarOutlined />, label: 'Грузы', path: '/loads', roles: ['shipper', 'dispatcher'] },
   { key: 'vehicles', icon: <TruckOutlined />, label: 'Машины', path: '/vehicles', roles: ['carrier', 'dispatcher'] },
+  { key: 'deals', icon: <DollarOutlined />, label: 'Сделки', path: '/deals', roles: ['shipper', 'carrier', 'dispatcher'] },
   { key: 'users', icon: <TeamOutlined />, label: 'Пользователи', path: '/users', roles: ['dispatcher'] },
   { key: 'profile', icon: <UserOutlined />, label: 'Профиль', path: '/profile', roles: 'all' },
 ];

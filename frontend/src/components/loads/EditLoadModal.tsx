@@ -75,7 +75,7 @@ export default function EditLoadModal({ open, load, onClose }: Props) {
       }}
       width={560}
     >
-      <Form form={form} layout="vertical" preserve={false}>
+      <Form form={form} layout="vertical" preserve={false} requiredMark={false}>
         <LoadFormFields />
       </Form>
     </Modal>

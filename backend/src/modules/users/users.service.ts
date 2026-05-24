@@ -9,11 +9,13 @@ import { User } from './entities/user.entity';
 import { UpdateProfileDto } from './dto/update-profile.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { QueryUsersDto } from './dto/query-users.dto';
+import { ContactsVisibilityService, Viewer } from '../../common/services/contacts-visibility.service';
 
 @Injectable()
 export class UsersService {
   constructor(
     @InjectRepository(User) private readonly repo: Repository<User>,
+    private readonly contacts: ContactsVisibilityService,
   ) {}
 
   async getProfile(userId: string): Promise<User> {
@@ -54,9 +56,10 @@ export class UsersService {
     return { data, total, page, limit };
   }
 
-  async getUserById(id: string): Promise<User> {
+  async getUserById(id: string, viewer?: Viewer): Promise<User> {
     const user = await this.repo.findOneBy({ id });
     if (!user) throw new NotFoundException('User not found');
+    if (viewer) await this.contacts.maskUser(viewer, user as any);
     return user;
   }
 

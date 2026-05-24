@@ -11,6 +11,7 @@ import { CreateLoadDto } from './dto/create-load.dto';
 import { UpdateLoadDto } from './dto/update-load.dto';
 import { QueryLoadsDto } from './dto/query-loads.dto';
 import { LoadStatus, UserRole } from '../../common/enums';
+import { ContactsVisibilityService } from '../../common/services/contacts-visibility.service';
 
 type ReqUser = { userId: string; role: UserRole; is_admin: boolean };
 
@@ -19,6 +20,7 @@ export class LoadsService {
   constructor(
     @InjectRepository(Load)
     private readonly loadsRepository: Repository<Load>,
+    private readonly contacts: ContactsVisibilityService,
   ) {}
 
   async create(dto: CreateLoadDto, currentUser: ReqUser): Promise<Load> {
@@ -36,7 +38,7 @@ export class LoadsService {
     return this.loadsRepository.save(load);
   }
 
-  async findAll(query: QueryLoadsDto): Promise<{ data: Load[]; total: number; page: number; limit: number }> {
+  async findAll(query: QueryLoadsDto, currentUser?: ReqUser): Promise<{ data: Load[]; total: number; page: number; limit: number }> {
     const { page = 1, limit = 20 } = query;
     const qb = this.loadsRepository
       .createQueryBuilder('load')
@@ -54,11 +56,14 @@ export class LoadsService {
       .take(limit);
 
     const [data, total] = await qb.getManyAndCount();
+    if (currentUser) {
+      await this.contacts.maskMany(currentUser, data.map((l) => l.shipper));
+    }
     return { data, total, page, limit };
   }
 
-  async findMy(userId: string, query: QueryLoadsDto): Promise<{ data: Load[]; total: number; page: number; limit: number }> {
-    return this.findAll({ ...query, shipperId: userId });
+  async findMy(userId: string, query: QueryLoadsDto, currentUser?: ReqUser): Promise<{ data: Load[]; total: number; page: number; limit: number }> {
+    return this.findAll({ ...query, shipperId: userId }, currentUser);
   }
 
   async findOne(id: string, currentUser: ReqUser): Promise<Load> {
@@ -70,6 +75,7 @@ export class LoadsService {
     if (currentUser.role === UserRole.SHIPPER && load.shipperId !== currentUser.userId) {
       throw new ForbiddenException('Нет доступа');
     }
+    await this.contacts.maskUser(currentUser, load.shipper);
     return load;
   }
 

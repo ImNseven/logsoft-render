@@ -9,6 +9,8 @@ import UsersListPage from '../pages/UsersListPage';
 import LoadsListPage from '../pages/loads/LoadsListPage';
 import VehiclesListPage from '../pages/vehicles/VehiclesListPage';
 import VehicleDetailPage from '../pages/vehicles/VehicleDetailPage';
+import DealsListPage from '../pages/deals/DealsListPage';
+import DealDetailPage from '../pages/deals/DealDetailPage';
 
 export default function AppRouter() {
   return (
@@ -32,6 +34,11 @@ export default function AppRouter() {
           <Route element={<ProtectedRoute allowedRoles={['carrier', 'dispatcher']} />}>
             <Route path="/vehicles" element={<VehiclesListPage />} />
             <Route path="/vehicles/:id" element={<VehicleDetailPage />} />
+          </Route>
+
+          <Route element={<ProtectedRoute allowedRoles={['shipper', 'carrier', 'dispatcher']} />}>
+            <Route path="/deals" element={<DealsListPage />} />
+            <Route path="/deals/:id" element={<DealDetailPage />} />
           </Route>
         </Route>
       </Route>

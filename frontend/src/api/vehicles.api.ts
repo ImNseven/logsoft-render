@@ -23,6 +23,8 @@ export const vehiclesApi = {
 
   deactivate: (id: string) => api.patch<Vehicle>(`/vehicles/${id}/deactivate`),
 
+  activate: (id: string) => api.patch<Vehicle>(`/vehicles/${id}/activate`),
+
   uploadDocument: (vehicleId: string, file: File, docType: string) => {
     const formData = new FormData();
     formData.append('file', file);

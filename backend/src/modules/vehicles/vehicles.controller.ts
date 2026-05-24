@@ -62,9 +62,9 @@ export class VehiclesController {
   @UseGuards(RolesGuard)
   findAll(@Query() query: QueryVehiclesDto, @CurrentUser() user: any) {
     if (user.role === UserRole.CARRIER && !user.is_admin) {
-      return this.vehiclesService.findMy(user.userId, query);
+      return this.vehiclesService.findMy(user.userId, query, user);
     }
-    return this.vehiclesService.findAll(query);
+    return this.vehiclesService.findAll(query, user);
   }
 
   @Get('my')
@@ -72,7 +72,7 @@ export class VehiclesController {
   @Roles(UserRole.CARRIER)
   @UseGuards(RolesGuard)
   findMy(@Query() query: QueryVehiclesDto, @CurrentUser() user: any) {
-    return this.vehiclesService.findMy(user.userId, query);
+    return this.vehiclesService.findMy(user.userId, query, user);
   }
 
   @Get(':id')
@@ -107,6 +107,17 @@ export class VehiclesController {
     @CurrentUser() user: any,
   ) {
     return this.vehiclesService.deactivate(id, user);
+  }
+
+  @Patch(':id/activate')
+  @ApiOperation({ summary: 'Активировать машину' })
+  @Roles(UserRole.CARRIER, UserRole.DISPATCHER)
+  @UseGuards(RolesGuard)
+  activate(
+    @Param('id', ParseUUIDPipe) id: string,
+    @CurrentUser() user: any,
+  ) {
+    return this.vehiclesService.activate(id, user);
   }
 
   @Post(':id/documents')
@@ -157,7 +168,7 @@ export class VehiclesController {
 
   @Get(':id/documents')
   @ApiOperation({ summary: 'Список документов машины (без содержимого файла)' })
-  @Roles(UserRole.CARRIER, UserRole.DISPATCHER)
+  @Roles(UserRole.CARRIER, UserRole.DISPATCHER, UserRole.SHIPPER)
   @UseGuards(RolesGuard)
   getDocuments(
     @Param('id', ParseUUIDPipe) vehicleId: string,

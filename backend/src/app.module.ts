@@ -11,6 +11,9 @@ import { AuthModule } from './modules/auth/auth.module';
 import { LoadsModule } from './modules/loads/loads.module';
 import { VehiclesModule } from './modules/vehicles/vehicles.module';
 import { S3Module } from './modules/s3/s3.module';
+import { DealsModule } from './modules/deals/deals.module';
+import { PaymentsModule } from './modules/payments/payments.module';
+import { CommonModule } from './common/common.module';
 
 @Module({
   imports: [
@@ -39,6 +42,9 @@ import { S3Module } from './modules/s3/s3.module';
     LoadsModule,
     VehiclesModule,
     S3Module,
+    DealsModule,
+    PaymentsModule,
+    CommonModule,
   ],
   controllers: [AppController],
 })

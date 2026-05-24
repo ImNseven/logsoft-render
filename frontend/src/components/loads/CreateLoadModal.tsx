@@ -58,7 +58,7 @@ export default function CreateLoadModal({ open, onClose }: Props) {
       destroyOnClose
       width={560}
     >
-      <Form form={form} layout="vertical" preserve={false}>
+      <Form form={form} layout="vertical" preserve={false} requiredMark={false}>
         <LoadFormFields showShipper={showShipper} />
       </Form>
     </Modal>

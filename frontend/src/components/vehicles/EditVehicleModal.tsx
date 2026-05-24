@@ -68,7 +68,7 @@ export default function EditVehicleModal({ open, vehicle, onClose }: Props) {
       }}
       width={520}
     >
-      <Form form={form} layout="vertical" preserve={false}>
+      <Form form={form} layout="vertical" preserve={false} requiredMark={false}>
         <VehicleFormFields />
       </Form>
     </Modal>
