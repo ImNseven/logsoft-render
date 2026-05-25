@@ -29,6 +29,10 @@ import { CommonModule } from './common/common.module';
         username: config.get('DB_USERNAME'),
         password: config.get('DB_PASSWORD'),
         database: config.get('DB_NAME'),
+        ssl:
+          config.get('DB_SSL') === 'true'
+            ? { rejectUnauthorized: false }
+            : false,
         synchronize: false,
         autoLoadEntities: true,
         logging: config.get('NODE_ENV') === 'development',

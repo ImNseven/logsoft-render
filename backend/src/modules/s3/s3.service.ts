@@ -19,6 +19,7 @@ export class S3Service implements OnModuleInit {
       useSSL: this.configService.get<string>('MINIO_USE_SSL') === 'true',
       accessKey: this.configService.get<string>('MINIO_ROOT_USER'),
       secretKey: this.configService.get<string>('MINIO_ROOT_PASSWORD'),
+      region: this.configService.get<string>('MINIO_REGION') || 'us-east-1',
     });
 
     try {
