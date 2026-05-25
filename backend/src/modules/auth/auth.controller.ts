@@ -1,4 +1,5 @@
 import { Controller, Post, Body, Headers, HttpCode } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import {
   ApiTags,
   ApiBody,
@@ -22,6 +23,7 @@ export class AuthController {
   constructor(
     private readonly authService: AuthService,
     private readonly smsService: SmsService,
+    private readonly config: ConfigService,
   ) {}
 
   @Public()
@@ -31,8 +33,13 @@ export class AuthController {
   @ApiResponse({ status: 200, description: 'SMS code sent' })
   @ApiResponse({ status: 400, description: 'Invalid phone number' })
   async sendCode(@Body() dto: SendCodeDto) {
-    await this.smsService.sendCode(dto.phone);
-    return { message: 'SMS code sent', phone: dto.phone };
+    const code = await this.smsService.sendCode(dto.phone);
+    const expose = this.config.get<string>('SHOW_SMS_CODE') === 'true';
+    return {
+      message: 'SMS code sent',
+      phone: dto.phone,
+      ...(expose ? { code } : {}),
+    };
   }
 
   @Public()

@@ -5,6 +5,7 @@ import { useQuery } from '@tanstack/react-query';
 import { useAuthStore } from '../store/useAuthStore';
 import { loadsApi } from '../api/loads.api';
 import { vehiclesApi } from '../api/vehicles.api';
+import AdminDashboardPage from './admin/AdminDashboardPage';
 
 const { Title } = Typography;
 
@@ -50,13 +51,17 @@ export default function DashboardPage() {
   const role = user?.role;
   const isAdmin = !!user?.is_admin;
 
+  if (isAdmin) {
+    return <AdminDashboardPage />;
+  }
+
   const isShipper = role === 'shipper';
   const isCarrier = role === 'carrier';
-  const isDispatcher = role === 'dispatcher' || isAdmin;
+  const isDispatcher = role === 'dispatcher';
 
-  const shipperLoads = useShipperLoadsCount(isShipper && !isAdmin);
+  const shipperLoads = useShipperLoadsCount(isShipper);
   const dispatcherLoads = useDispatcherActiveLoadsCount(isDispatcher);
-  const carrierVehicles = useCarrierVehiclesCount(isCarrier && !isAdmin);
+  const carrierVehicles = useCarrierVehiclesCount(isCarrier);
   const allVehicles = useAllVehiclesCount(isDispatcher);
 
   return (
@@ -66,7 +71,7 @@ export default function DashboardPage() {
       </Title>
 
       <Row gutter={[16, 16]} style={{ marginTop: 24 }}>
-        {isShipper && !isAdmin && (
+        {isShipper && (
           <Col xs={24} sm={12} lg={8}>
             <Card hoverable onClick={() => navigate('/loads')}>
               <Statistic
@@ -80,7 +85,7 @@ export default function DashboardPage() {
           </Col>
         )}
 
-        {isCarrier && !isAdmin && (
+        {isCarrier && (
           <Col xs={24} sm={12} lg={8}>
             <Card hoverable onClick={() => navigate('/vehicles')}>
               <Statistic

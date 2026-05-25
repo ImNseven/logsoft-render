@@ -13,6 +13,7 @@ import { VehiclesModule } from './modules/vehicles/vehicles.module';
 import { S3Module } from './modules/s3/s3.module';
 import { DealsModule } from './modules/deals/deals.module';
 import { PaymentsModule } from './modules/payments/payments.module';
+import { AdminModule } from './modules/admin/admin.module';
 import { CommonModule } from './common/common.module';
 
 @Module({
@@ -44,6 +45,7 @@ import { CommonModule } from './common/common.module';
     S3Module,
     DealsModule,
     PaymentsModule,
+    AdminModule,
     CommonModule,
   ],
   controllers: [AppController],

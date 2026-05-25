@@ -4,6 +4,7 @@ import { UploadOutlined } from '@ant-design/icons';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import type { UploadFile } from 'antd/es/upload/interface';
 import { paymentsApi } from '../../api/payments.api';
+import { useResponsiveModalWidth } from '../../hooks/useIsMobile';
 
 interface Props {
   open: boolean;
@@ -19,6 +20,7 @@ export default function UploadQrModal({ open, onClose, paymentId, dealId }: Prop
   const [form] = Form.useForm<{ amount?: number }>();
   const [fileList, setFileList] = useState<UploadFile[]>([]);
   const qc = useQueryClient();
+  const modalSize = useResponsiveModalWidth(520);
 
   const mutation = useMutation({
     mutationFn: ({ file, amount }: { file: File; amount?: number }) =>
@@ -62,7 +64,7 @@ export default function UploadQrModal({ open, onClose, paymentId, dealId }: Prop
       okText="Загрузить"
       cancelText="Отмена"
       destroyOnClose
-      width={520}
+      {...modalSize}
     >
       <Form form={form} layout="vertical" preserve={false}>
         <Form.Item name="amount" label="Сумма">

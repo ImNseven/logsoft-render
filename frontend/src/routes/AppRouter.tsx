@@ -11,6 +11,7 @@ import VehiclesListPage from '../pages/vehicles/VehiclesListPage';
 import VehicleDetailPage from '../pages/vehicles/VehicleDetailPage';
 import DealsListPage from '../pages/deals/DealsListPage';
 import DealDetailPage from '../pages/deals/DealDetailPage';
+import AdminDictionariesPage from '../pages/admin/AdminDictionariesPage';
 
 export default function AppRouter() {
   return (
@@ -40,6 +41,16 @@ export default function AppRouter() {
             <Route path="/deals" element={<DealsListPage />} />
             <Route path="/deals/:id" element={<DealDetailPage />} />
           </Route>
+
+          <Route element={<ProtectedRoute requireAdmin />}>
+            <Route path="/dictionaries" element={<AdminDictionariesPage />} />
+          </Route>
+
+          <Route path="/admin" element={<Navigate to="/dashboard" replace />} />
+          <Route path="/admin/dashboard" element={<Navigate to="/dashboard" replace />} />
+          <Route path="/admin/users" element={<Navigate to="/users" replace />} />
+          <Route path="/admin/deals" element={<Navigate to="/deals" replace />} />
+          <Route path="/admin/dictionaries" element={<Navigate to="/dictionaries" replace />} />
         </Route>
       </Route>
 

@@ -5,9 +5,10 @@ import type { UserRole } from '../types';
 
 interface Props {
   allowedRoles?: UserRole[];
+  requireAdmin?: boolean;
 }
 
-export default function ProtectedRoute({ allowedRoles }: Props) {
+export default function ProtectedRoute({ allowedRoles, requireAdmin }: Props) {
   const { isAuthenticated, isLoading, user } = useAuthStore();
 
   if (isLoading) {
@@ -20,6 +21,10 @@ export default function ProtectedRoute({ allowedRoles }: Props) {
 
   if (!isAuthenticated) {
     return <Navigate to="/login" replace />;
+  }
+
+  if (requireAdmin && !user?.is_admin) {
+    return <Navigate to="/dashboard" replace />;
   }
 
   if (allowedRoles && user) {

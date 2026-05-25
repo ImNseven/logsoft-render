@@ -4,6 +4,7 @@ import type { UploadFile } from 'antd/es/upload/interface';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { vehiclesApi } from '../../api/vehicles.api';
 import { DOC_TYPE_OPTIONS } from './docTypes';
+import { useResponsiveModalWidth } from '../../hooks/useIsMobile';
 import type { DocType } from '../../types/vehicles.types';
 
 interface Props {
@@ -20,6 +21,7 @@ interface FormValues {
 export default function UploadDocumentModal({ open, vehicleId, onClose }: Props) {
   const [form] = Form.useForm<FormValues>();
   const qc = useQueryClient();
+  const modalSize = useResponsiveModalWidth(480);
 
   const mutation = useMutation({
     mutationFn: (vars: { file: File; docType: DocType }) =>
@@ -63,7 +65,7 @@ export default function UploadDocumentModal({ open, vehicleId, onClose }: Props)
       okText="Загрузить"
       cancelText="Отмена"
       destroyOnClose
-      width={480}
+      {...modalSize}
     >
       <Form form={form} layout="vertical" preserve={false}>
         <Form.Item

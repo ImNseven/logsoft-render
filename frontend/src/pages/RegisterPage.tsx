@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import { Form, Input, Button, Card, Typography, Steps, Select, message } from 'antd';
+import { Form, Input, Button, Card, Typography, Steps, Select, Alert, message } from 'antd';
 import { PhoneOutlined, LockOutlined } from '@ant-design/icons';
 import { authApi } from '../api/auth.api';
 import { useAuthStore } from '../store/useAuthStore';
@@ -18,6 +18,7 @@ export default function RegisterPage() {
   const [step, setStep] = useState(0);
   const [phone, setPhone] = useState('');
   const [temporaryToken, setTemporaryToken] = useState('');
+  const [devCode, setDevCode] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [countdown, setCountdown] = useState(0);
   const register = useAuthStore((s) => s.register);
@@ -32,11 +33,12 @@ export default function RegisterPage() {
   const sendCode = useCallback(async (phoneValue: string) => {
     setLoading(true);
     try {
-      await authApi.sendCode(phoneValue);
+      const { data } = await authApi.sendCode(phoneValue);
       setPhone(phoneValue);
       setCountdown(60);
+      setDevCode(data.code ?? null);
       setStep(1);
-      message.success('Код отправлен (смотрите консоль backend)');
+      message.success('Код отправлен');
     } catch (err: any) {
       message.error(err.response?.data?.message || 'Ошибка отправки кода');
     } finally {
@@ -129,6 +131,18 @@ export default function RegisterPage() {
             <Text style={{ display: 'block', marginBottom: 16 }}>
               Код отправлен на {phone}
             </Text>
+            {devCode && (
+              <Alert
+                type="warning"
+                showIcon
+                style={{ marginBottom: 16 }}
+                message={
+                  <span>
+                    Тестовый режим. Код для входа: <b style={{ fontSize: 18, letterSpacing: 2 }}>{devCode}</b>
+                  </span>
+                }
+              />
+            )}
             <Form.Item
               label="Код подтверждения"
               name="code"

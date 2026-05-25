@@ -14,10 +14,11 @@ export class SmsService {
     private readonly config: ConfigService,
   ) {}
 
-  async sendCode(phone: string): Promise<void> {
+  async sendCode(phone: string): Promise<string> {
     const code = String(Math.floor(1000 + Math.random() * 9000));
     await this.redis.setex(`sms:${phone}`, 300, code);
     await this.smsProvider.sendCode(phone, code);
+    return code;
   }
 
   async verifyCode(phone: string, code: string): Promise<string> {

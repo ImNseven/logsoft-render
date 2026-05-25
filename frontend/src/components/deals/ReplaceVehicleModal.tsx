@@ -2,6 +2,7 @@ import { Form, Modal, Select, message } from 'antd';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { dealsApi } from '../../api/deals.api';
 import { vehiclesApi } from '../../api/vehicles.api';
+import { useResponsiveModalWidth } from '../../hooks/useIsMobile';
 
 interface Props {
   open: boolean;
@@ -13,6 +14,7 @@ interface Props {
 export default function ReplaceVehicleModal({ open, onClose, dealId, currentVehicleId }: Props) {
   const [form] = Form.useForm<{ newVehicleId: string }>();
   const qc = useQueryClient();
+  const modalSize = useResponsiveModalWidth(520);
 
   const vehiclesQ = useQuery({
     queryKey: ['vehicles', 'active-for-replace'],
@@ -59,7 +61,7 @@ export default function ReplaceVehicleModal({ open, onClose, dealId, currentVehi
       okText="Заменить"
       cancelText="Отмена"
       destroyOnClose
-      width={520}
+      {...modalSize}
     >
       <Form form={form} layout="vertical" preserve={false}>
         <Form.Item

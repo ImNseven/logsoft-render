@@ -4,6 +4,7 @@ import type { Dayjs } from 'dayjs';
 import { loadsApi } from '../../api/loads.api';
 import LoadFormFields from './LoadFormFields';
 import { useAuthStore } from '../../store/useAuthStore';
+import { useResponsiveModalWidth } from '../../hooks/useIsMobile';
 import type { CreateLoadDto } from '../../types/loads.types';
 
 interface Props {
@@ -20,6 +21,7 @@ export default function CreateLoadModal({ open, onClose }: Props) {
   const qc = useQueryClient();
   const user = useAuthStore((s) => s.user);
   const showShipper = user?.role === 'dispatcher' || !!user?.is_admin;
+  const modalSize = useResponsiveModalWidth(560);
 
   const mutation = useMutation({
     mutationFn: (dto: CreateLoadDto) => loadsApi.create(dto).then((r) => r.data),
@@ -56,7 +58,7 @@ export default function CreateLoadModal({ open, onClose }: Props) {
       okText="Создать"
       cancelText="Отмена"
       destroyOnClose
-      width={560}
+      {...modalSize}
     >
       <Form form={form} layout="vertical" preserve={false} requiredMark={false}>
         <LoadFormFields showShipper={showShipper} />

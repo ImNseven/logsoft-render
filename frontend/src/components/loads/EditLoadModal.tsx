@@ -3,6 +3,7 @@ import { useMutation, useQueryClient } from '@tanstack/react-query';
 import dayjs, { Dayjs } from 'dayjs';
 import { loadsApi } from '../../api/loads.api';
 import LoadFormFields from './LoadFormFields';
+import { useResponsiveModalWidth } from '../../hooks/useIsMobile';
 import type { CreateLoadDto, Load } from '../../types/loads.types';
 
 interface Props {
@@ -31,6 +32,7 @@ function buildInitial(load: Load | null): FormValues | undefined {
 export default function EditLoadModal({ open, load, onClose }: Props) {
   const [form] = Form.useForm<FormValues>();
   const qc = useQueryClient();
+  const modalSize = useResponsiveModalWidth(560);
 
   const mutation = useMutation({
     mutationFn: (dto: Partial<CreateLoadDto>) =>
@@ -73,7 +75,7 @@ export default function EditLoadModal({ open, load, onClose }: Props) {
           if (initial) form.setFieldsValue(initial);
         }
       }}
-      width={560}
+      {...modalSize}
     >
       <Form form={form} layout="vertical" preserve={false} requiredMark={false}>
         <LoadFormFields />

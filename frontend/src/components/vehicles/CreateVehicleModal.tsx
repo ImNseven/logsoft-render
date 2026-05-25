@@ -2,6 +2,7 @@ import { Form, Modal, message } from 'antd';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { vehiclesApi } from '../../api/vehicles.api';
 import VehicleFormFields from './VehicleFormFields';
+import { useResponsiveModalWidth } from '../../hooks/useIsMobile';
 import type { CreateVehicleDto } from '../../types/vehicles.types';
 
 interface Props {
@@ -12,6 +13,7 @@ interface Props {
 export default function CreateVehicleModal({ open, onClose }: Props) {
   const [form] = Form.useForm<CreateVehicleDto>();
   const qc = useQueryClient();
+  const modalSize = useResponsiveModalWidth(520);
   const mutation = useMutation({
     mutationFn: (dto: CreateVehicleDto) =>
       vehiclesApi.create(dto).then((r) => r.data),
@@ -46,7 +48,7 @@ export default function CreateVehicleModal({ open, onClose }: Props) {
       okText="Добавить"
       cancelText="Отмена"
       destroyOnClose
-      width={520}
+      {...modalSize}
     >
       <Form form={form} layout="vertical" preserve={false} requiredMark={false}>
         <VehicleFormFields />

@@ -3,7 +3,10 @@ import type { RegisterData } from '../types';
 
 export const authApi = {
   sendCode: (phone: string) =>
-    api.post('/auth/send-code', { phone }),
+    api.post<{ message: string; phone: string; code?: string }>(
+      '/auth/send-code',
+      { phone },
+    ),
 
   verifyCode: (phone: string, code: string) =>
     api.post<{ temporary_token: string }>('/auth/verify-code', { phone, code }),

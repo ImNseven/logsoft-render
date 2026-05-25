@@ -4,6 +4,7 @@ import dayjs from 'dayjs';
 import { dealsApi } from '../../api/deals.api';
 import { loadsApi } from '../../api/loads.api';
 import { vehiclesApi } from '../../api/vehicles.api';
+import { useResponsiveModalWidth } from '../../hooks/useIsMobile';
 import type { CreateDealDto } from '../../types/deals.types';
 import type { Load } from '../../types/loads.types';
 import type { Vehicle } from '../../types/vehicles.types';
@@ -76,6 +77,7 @@ function VehicleOption({ vehicle }: { vehicle: Vehicle }) {
 export default function CreateDealModal({ open, onClose }: Props) {
   const [form] = Form.useForm<CreateDealDto>();
   const qc = useQueryClient();
+  const modalSize = useResponsiveModalWidth(600);
 
   const loadsQ = useQuery({
     queryKey: ['loads', 'active-for-deal'],
@@ -134,7 +136,7 @@ export default function CreateDealModal({ open, onClose }: Props) {
       okText="Создать"
       cancelText="Отмена"
       destroyOnClose
-      width={600}
+      {...modalSize}
     >
       <Form form={form} layout="vertical" preserve={false} requiredMark={false}>
         <Form.Item
