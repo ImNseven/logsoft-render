@@ -4,11 +4,16 @@ body,
   height: 100%;
 }
 
+html {
+  background: #f0f2f5;
+}
+
 body {
   margin: 0;
   -webkit-tap-highlight-color: transparent;
   -webkit-text-size-adjust: 100%;
-  background: #1677ff;
+  background: #f0f2f5;
+  overscroll-behavior-y: none;
 }
 
 .ant-layout-header {
@@ -53,6 +58,12 @@ body {
 
   .ant-modal-content {
     border-radius: 14px !important;
+  }
+
+  .ant-modal-body {
+    max-height: calc(100vh - 160px - env(safe-area-inset-top) - env(safe-area-inset-bottom)) !important;
+    overflow-y: auto !important;
+    -webkit-overflow-scrolling: touch;
   }
 }
 

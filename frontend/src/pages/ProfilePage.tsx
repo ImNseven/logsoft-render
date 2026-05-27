@@ -1,6 +1,6 @@
 import { useState } from 'react';
-import { Descriptions, Button, Modal, Form, Input, message, Tag, Typography } from 'antd';
-import { EditOutlined } from '@ant-design/icons';
+import { Descriptions, Button, Modal, Form, Input, message, Popconfirm, Space, Tag, Typography } from 'antd';
+import { EditOutlined, LogoutOutlined } from '@ant-design/icons';
 import { useAuthStore } from '../store/useAuthStore';
 import { usersApi } from '../api/users.api';
 import { useResponsiveModalWidth } from '../hooks/useIsMobile';
@@ -14,7 +14,7 @@ const ROLE_LABELS: Record<string, { label: string; color: string }> = {
 };
 
 export default function ProfilePage() {
-  const { user, fetchProfile } = useAuthStore();
+  const { user, fetchProfile, logout } = useAuthStore();
   const [modalOpen, setModalOpen] = useState(false);
   const [saving, setSaving] = useState(false);
   const [form] = Form.useForm();
@@ -47,11 +47,24 @@ export default function ProfilePage() {
 
   return (
     <div>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 24 }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 24, gap: 8, flexWrap: 'wrap' }}>
         <Title level={4} style={{ margin: 0 }}>Профиль</Title>
-        <Button type="primary" icon={<EditOutlined />} onClick={openEdit}>
-          Редактировать
-        </Button>
+        <Space wrap>
+          <Button type="primary" icon={<EditOutlined />} onClick={openEdit}>
+            Редактировать
+          </Button>
+          <Popconfirm
+            title="Выйти из аккаунта?"
+            okText="Выйти"
+            cancelText="Отмена"
+            okButtonProps={{ danger: true }}
+            onConfirm={logout}
+          >
+            <Button danger icon={<LogoutOutlined />}>
+              Выйти
+            </Button>
+          </Popconfirm>
+        </Space>
       </div>
 
       <Descriptions bordered column={{ xs: 1, sm: 2 }}>
