@@ -8,6 +8,9 @@ import { useAuthStore } from '../../store/useAuthStore';
 import { useDeals } from '../../hooks/useDeals';
 import { dealStatusColor, dealStatusLabel } from '../../utils/deal-status';
 import CreateDealModal from '../../components/deals/CreateDealModal';
+import MobileCardList from '../../components/common/MobileCardList';
+import FilterBar from '../../components/common/FilterBar';
+import { useIsMobile } from '../../hooks/useIsMobile';
 import type { Deal, DealStatus, QueryDealsParams } from '../../types/deals.types';
 
 const { Title } = Typography;
@@ -30,6 +33,7 @@ export default function DealsListPage() {
   const role = user?.role;
   const isAdmin = !!user?.is_admin;
   const isDispatcherView = role === 'dispatcher' || isAdmin;
+  const isMobile = useIsMobile();
 
   const [page, setPage] = useState(1);
   const [limit, setLimit] = useState(20);
@@ -135,7 +139,13 @@ export default function DealsListPage() {
         )}
       </div>
 
-      <Space wrap style={{ marginBottom: 16 }}>
+      <FilterBar
+        activeCount={status ? 1 : 0}
+        onReset={() => {
+          setStatus(undefined);
+          setPage(1);
+        }}
+      >
         <Select
           placeholder="Статус"
           allowClear
@@ -147,30 +157,86 @@ export default function DealsListPage() {
             setStatus(v);
           }}
         />
-      </Space>
+      </FilterBar>
 
-      <Table<Deal>
-        rowKey="id"
-        columns={columns}
-        dataSource={data?.data ?? []}
-        loading={isLoading || isFetching}
-        scroll={{ x: 1100 }}
-        onRow={(record) => ({
-          onClick: () => navigate(`/deals/${record.id}`),
-          style: { cursor: 'pointer' },
-        })}
-        locale={{ emptyText: <Empty description="Сделок пока нет" /> }}
-        pagination={{
-          current: page,
-          pageSize: limit,
-          total: data?.total ?? 0,
-          showSizeChanger: true,
-          onChange: (p, ps) => {
-            setPage(p);
-            setLimit(ps);
-          },
-        }}
-      />
+      {isMobile ? (
+        <MobileCardList<Deal>
+          items={data?.data ?? []}
+          rowKey={(d) => d.id}
+          loading={isLoading || isFetching}
+          emptyText="Сделок пока нет"
+          pagination={{
+            current: page,
+            pageSize: limit,
+            total: data?.total ?? 0,
+            onChange: (p, ps) => { setPage(p); setLimit(ps); },
+          }}
+          renderCard={(r) => {
+            const origin = r.load?.originPoint?.name ?? '—';
+            const dest = r.load?.destination ?? '—';
+            const transport = r.load?.transportType?.name;
+            const plate = r.vehicle?.plateNumber;
+            const showShipper = isDispatcherView || role === 'carrier';
+            const showCarrier = isDispatcherView || role === 'shipper';
+            return (
+              <Card
+                styles={{ body: { padding: 14 } }}
+                style={{ borderRadius: 12, cursor: 'pointer' }}
+                onClick={() => navigate(`/deals/${r.id}`)}
+              >
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 8, marginBottom: 8 }}>
+                  <Typography.Text strong style={{ fontSize: 15, lineHeight: 1.3, flex: 1 }}>
+                    {origin} → {dest}
+                  </Typography.Text>
+                  <Tag color={dealStatusColor(r.status)} style={{ margin: 0 }}>
+                    {dealStatusLabel(r.status)}
+                  </Tag>
+                </div>
+                <Space size={6} wrap style={{ marginBottom: 8 }}>
+                  {transport && <Tag color="geekblue" style={{ margin: 0 }}>{transport}</Tag>}
+                  {plate && <Tag style={{ margin: 0 }}>{plate}</Tag>}
+                </Space>
+                <div style={{ fontSize: 13, color: '#666', marginBottom: 4 }}>
+                  Создана: <Typography.Text strong style={{ fontSize: 13 }}>{dayjs(r.createdAt).format('DD.MM.YYYY')}</Typography.Text>
+                </div>
+                {showShipper && (
+                  <div style={{ fontSize: 13, color: '#666', marginBottom: 2 }}>
+                    Грузоотпр.: <Typography.Text strong style={{ fontSize: 13 }}>{userName(r.shipper as any)}</Typography.Text>
+                  </div>
+                )}
+                {showCarrier && (
+                  <div style={{ fontSize: 13, color: '#666' }}>
+                    Перевозчик: <Typography.Text strong style={{ fontSize: 13 }}>{userName(r.carrier as any)}</Typography.Text>
+                  </div>
+                )}
+              </Card>
+            );
+          }}
+        />
+      ) : (
+        <Table<Deal>
+          rowKey="id"
+          columns={columns}
+          dataSource={data?.data ?? []}
+          loading={isLoading || isFetching}
+          scroll={{ x: 1100 }}
+          onRow={(record) => ({
+            onClick: () => navigate(`/deals/${record.id}`),
+            style: { cursor: 'pointer' },
+          })}
+          locale={{ emptyText: <Empty description="Сделок пока нет" /> }}
+          pagination={{
+            current: page,
+            pageSize: limit,
+            total: data?.total ?? 0,
+            showSizeChanger: true,
+            onChange: (p, ps) => {
+              setPage(p);
+              setLimit(ps);
+            },
+          }}
+        />
+      )}
 
       <CreateDealModal open={createOpen} onClose={() => setCreateOpen(false)} />
     </Card>

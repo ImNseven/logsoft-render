@@ -5,6 +5,7 @@ import {
   Select,
   Tag,
   Button,
+  Card,
   Space,
   Typography,
   Popconfirm,
@@ -19,6 +20,9 @@ import {
 import type { ColumnsType, TablePaginationConfig } from 'antd/es/table';
 import { usersApi } from '../api/users.api';
 import { useAuthStore } from '../store/useAuthStore';
+import MobileCardList from '../components/common/MobileCardList';
+import FilterBar from '../components/common/FilterBar';
+import { useIsMobile } from '../hooks/useIsMobile';
 import type { User, UserRole, UpdateUserDto } from '../types';
 
 const { Title } = Typography;
@@ -56,6 +60,7 @@ function roleToUpdate(role: EffectiveRole): UpdateUserDto {
 export default function UsersListPage() {
   const currentUser = useAuthStore((s) => s.user);
   const isAdmin = !!currentUser?.is_admin;
+  const isMobile = useIsMobile();
 
   const [users, setUsers] = useState<User[]>([]);
   const [total, setTotal] = useState(0);
@@ -238,7 +243,14 @@ export default function UsersListPage() {
     <div>
       <Title level={4}>Пользователи</Title>
 
-      <Space wrap style={{ marginBottom: 16 }}>
+      <FilterBar
+        activeCount={(searchInput ? 1 : 0) + (roleFilter ? 1 : 0)}
+        onReset={() => {
+          setSearchInput('');
+          setRoleFilter('');
+          setPage(1);
+        }}
+      >
         <Input
           placeholder="Поиск по имени, телефону, компании..."
           value={searchInput}
@@ -256,16 +268,97 @@ export default function UsersListPage() {
           options={ROLE_FILTER_OPTIONS}
           style={{ width: 200 }}
         />
-      </Space>
+      </FilterBar>
 
-      <Table
-        columns={columns}
-        dataSource={users}
-        rowKey="id"
-        loading={loading}
-        pagination={pagination}
-        scroll={{ x: 800 }}
-      />
+      {isMobile ? (
+        <MobileCardList<User>
+          items={users}
+          rowKey={(u) => u.id}
+          loading={loading}
+          emptyText="Пользователей не найдено"
+          pagination={{
+            current: page,
+            pageSize: limit,
+            total,
+            onChange: (p) => setPage(p),
+          }}
+          renderCard={(u) => {
+            const role = effectiveRole(u);
+            const cfg = ROLE_CONFIG[role];
+            const canEditRole = isAdmin && u.id !== currentUser?.id;
+            return (
+              <Card styles={{ body: { padding: 14 } }} style={{ borderRadius: 12 }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 8, marginBottom: 8 }}>
+                  <Typography.Text strong style={{ fontSize: 15, lineHeight: 1.3, flex: 1 }}>
+                    {u.full_name || u.phone}
+                  </Typography.Text>
+                  {u.is_active ? (
+                    <Tag color="green" style={{ margin: 0 }}>Активен</Tag>
+                  ) : (
+                    <Tag color="red" style={{ margin: 0 }}>Неактивен</Tag>
+                  )}
+                </div>
+                {u.full_name && (
+                  <div style={{ fontSize: 13, color: '#666', marginBottom: 4 }}>{u.phone}</div>
+                )}
+                {u.company_name && (
+                  <div style={{ fontSize: 13, color: '#666', marginBottom: 4 }}>{u.company_name}</div>
+                )}
+                <div style={{ fontSize: 13, color: '#666', marginBottom: 4 }}>
+                  Зарегистрирован: <Typography.Text strong style={{ fontSize: 13 }}>{new Date(u.created_at).toLocaleDateString('ru-RU')}</Typography.Text>
+                </div>
+                <div style={{ marginTop: 10 }}>
+                  {canEditRole ? (
+                    <Select
+                      size="middle"
+                      value={role}
+                      options={ROLE_SELECT_OPTIONS}
+                      style={{ width: '100%' }}
+                      loading={savingRoleId === u.id}
+                      onChange={(v) => handleRoleChange(u, v)}
+                    />
+                  ) : (
+                    <Tag color={cfg.color}>{cfg.label}</Tag>
+                  )}
+                </div>
+                {isAdmin && u.id !== currentUser?.id && (
+                  <div style={{ marginTop: 10 }}>
+                    {u.is_active ? (
+                      <Popconfirm
+                        title="Деактивировать пользователя?"
+                        okText="Да"
+                        cancelText="Нет"
+                        okButtonProps={{ danger: true }}
+                        onConfirm={() => handleToggleActive(u)}
+                      >
+                        <Button block danger icon={<StopOutlined />}>Деактивировать</Button>
+                      </Popconfirm>
+                    ) : (
+                      <Popconfirm
+                        title="Активировать пользователя?"
+                        okText="Да"
+                        cancelText="Нет"
+                        onConfirm={() => handleToggleActive(u)}
+                      >
+                        <Button block type="primary" icon={<CheckCircleOutlined />}>Активировать</Button>
+                      </Popconfirm>
+                    )}
+                  </div>
+                )}
+              </Card>
+            );
+          }}
+        />
+      ) : (
+        <Table
+          columns={columns}
+          dataSource={users}
+          rowKey="id"
+          loading={loading}
+          pagination={pagination}
+          scroll={{ x: 800 }}
+        />
+      )}
     </div>
   );
 }

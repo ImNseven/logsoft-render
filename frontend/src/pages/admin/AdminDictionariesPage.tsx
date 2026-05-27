@@ -1,10 +1,12 @@
 import { useState } from 'react';
-import { Tabs, Table, Button, Space, Typography, Popconfirm, message } from 'antd';
+import { Tabs, Table, Button, Card, Space, Typography, Popconfirm, message } from 'antd';
 import { PlusOutlined, EditOutlined, DeleteOutlined } from '@ant-design/icons';
 import type { ColumnsType } from 'antd/es/table';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { adminApi } from '../../api/admin.api';
 import DictionaryItemModal, { DictionaryType } from '../../components/admin/DictionaryItemModal';
+import MobileCardList from '../../components/common/MobileCardList';
+import { useIsMobile } from '../../hooks/useIsMobile';
 import type { OriginPoint, TransportType } from '../../types';
 
 const { Title } = Typography;
@@ -15,6 +17,7 @@ function DictionaryTable({ type }: { type: DictionaryType }) {
   const queryClient = useQueryClient();
   const [editing, setEditing] = useState<DictItem | null>(null);
   const [createOpen, setCreateOpen] = useState(false);
+  const isMobile = useIsMobile();
 
   const queryKey = ['admin', type, 'all'];
 
@@ -83,14 +86,44 @@ function DictionaryTable({ type }: { type: DictionaryType }) {
           Добавить
         </Button>
       </div>
-      <Table
-        rowKey="id"
-        columns={columns}
-        dataSource={data ?? []}
-        loading={isLoading}
-        pagination={false}
-        scroll={{ x: 600 }}
-      />
+      {isMobile ? (
+        <MobileCardList<DictItem>
+          items={data ?? []}
+          rowKey={(i) => i.id}
+          loading={isLoading}
+          emptyText="Записей нет"
+          renderCard={(item) => (
+            <Card styles={{ body: { padding: 14 } }} style={{ borderRadius: 12 }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 8, marginBottom: 10 }}>
+                <Typography.Text strong style={{ fontSize: 15, flex: 1 }}>{item.name}</Typography.Text>
+                <Typography.Text type="secondary" style={{ fontSize: 12 }}>#{item.id}</Typography.Text>
+              </div>
+              <Space style={{ width: '100%' }} size={8}>
+                <Button style={{ flex: 1 }} block icon={<EditOutlined />} onClick={() => setEditing(item)}>Изменить</Button>
+                <Popconfirm
+                  title="Удалить запись?"
+                  description="Это действие нельзя отменить."
+                  onConfirm={() => handleRemove(item)}
+                  okText="Удалить"
+                  cancelText="Отмена"
+                  okButtonProps={{ danger: true }}
+                >
+                  <Button style={{ flex: 1 }} block danger icon={<DeleteOutlined />}>Удалить</Button>
+                </Popconfirm>
+              </Space>
+            </Card>
+          )}
+        />
+      ) : (
+        <Table
+          rowKey="id"
+          columns={columns}
+          dataSource={data ?? []}
+          loading={isLoading}
+          pagination={false}
+          scroll={{ x: 600 }}
+        />
+      )}
       <DictionaryItemModal
         open={createOpen || !!editing}
         type={type}

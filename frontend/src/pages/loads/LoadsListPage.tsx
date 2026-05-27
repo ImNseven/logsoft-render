@@ -23,6 +23,9 @@ import {
 import { loadsApi } from '../../api/loads.api';
 import CreateLoadModal from '../../components/loads/CreateLoadModal';
 import EditLoadModal from '../../components/loads/EditLoadModal';
+import MobileCardList from '../../components/common/MobileCardList';
+import FilterBar from '../../components/common/FilterBar';
+import { useIsMobile } from '../../hooks/useIsMobile';
 import type {
   Load,
   LoadStatus,
@@ -62,6 +65,7 @@ export default function LoadsListPage() {
   const role = user?.role;
   const isAdmin = !!user?.is_admin;
   const isDispatcherView = role === 'dispatcher' || isAdmin;
+  const isMobile = useIsMobile();
 
   const [page, setPage] = useState(1);
   const [limit, setLimit] = useState(20);
@@ -203,7 +207,19 @@ export default function LoadsListPage() {
         </Button>
       </div>
 
-      <Space wrap style={{ marginBottom: 16 }}>
+      <FilterBar
+        activeCount={
+          (status ? 1 : 0) +
+          (isDispatcherView && originPointId ? 1 : 0) +
+          (isDispatcherView && transportTypeId ? 1 : 0)
+        }
+        onReset={() => {
+          setStatus(undefined);
+          setOriginPointId(undefined);
+          setTransportTypeId(undefined);
+          setPage(1);
+        }}
+      >
         <Select
           placeholder="Статус"
           allowClear
@@ -251,25 +267,92 @@ export default function LoadsListPage() {
             />
           </>
         )}
-      </Space>
+      </FilterBar>
 
-      <Table<Load>
-        rowKey="id"
-        columns={columns}
-        dataSource={data?.data ?? []}
-        loading={isLoading || isFetching}
-        scroll={{ x: 1100 }}
-        pagination={{
-          current: page,
-          pageSize: limit,
-          total: data?.total ?? 0,
-          showSizeChanger: true,
-          onChange: (p, ps) => {
-            setPage(p);
-            setLimit(ps);
-          },
-        }}
-      />
+      {isMobile ? (
+        <MobileCardList<Load>
+          items={data?.data ?? []}
+          rowKey={(l) => l.id}
+          loading={isLoading || isFetching}
+          emptyText="Грузов пока нет"
+          pagination={{
+            current: page,
+            pageSize: limit,
+            total: data?.total ?? 0,
+            onChange: (p, ps) => { setPage(p); setLimit(ps); },
+          }}
+          renderCard={(r) => {
+            const weight = formatNumber(r.weightKg);
+            const volume = formatNumber(r.volumeM3);
+            const ready = r.readyDate ? dayjs(r.readyDate).format('DD.MM.YYYY') : null;
+            const shipper = isDispatcherView
+              ? r.shipper?.full_name || r.shipper?.company_name || r.shipper?.phone
+              : null;
+            return (
+              <Card styles={{ body: { padding: 14 } }} style={{ borderRadius: 12 }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 8, marginBottom: 8 }}>
+                  <Typography.Text strong style={{ fontSize: 15, lineHeight: 1.3, flex: 1 }}>
+                    {r.originPoint?.name ?? '—'} → {r.destination}
+                  </Typography.Text>
+                  <Tag color={STATUS_COLOR[r.status]} style={{ margin: 0 }}>
+                    {STATUS_LABEL[r.status]}
+                  </Tag>
+                </div>
+                <Space size={6} wrap style={{ marginBottom: 8 }}>
+                  {r.transportType?.name && <Tag color="blue" style={{ margin: 0 }}>{r.transportType.name}</Tag>}
+                  {weight !== '—' && <Tag style={{ margin: 0 }}>{weight} кг</Tag>}
+                  {volume !== '—' && <Tag style={{ margin: 0 }}>{volume} м³</Tag>}
+                </Space>
+                {ready && (
+                  <div style={{ fontSize: 13, color: '#666', marginBottom: 4 }}>
+                    Готов: <Typography.Text strong style={{ fontSize: 13 }}>{ready}</Typography.Text>
+                  </div>
+                )}
+                {shipper && (
+                  <div style={{ fontSize: 13, color: '#666' }}>
+                    Грузоотправитель: <Typography.Text strong style={{ fontSize: 13 }}>{shipper}</Typography.Text>
+                  </div>
+                )}
+                {r.status === 'active' && (
+                  <Space style={{ width: '100%', marginTop: 12 }} size={8}>
+                    <Button style={{ flex: 1 }} block onClick={() => setEditLoad(r)}>
+                      Редактировать
+                    </Button>
+                    <Popconfirm
+                      title="Отменить груз?"
+                      description="Это действие нельзя отменить"
+                      okText="Да"
+                      cancelText="Нет"
+                      okButtonProps={{ danger: true }}
+                      onConfirm={() => cancelMutation.mutate(r.id)}
+                    >
+                      <Button style={{ flex: 1 }} block danger>Отменить</Button>
+                    </Popconfirm>
+                  </Space>
+                )}
+              </Card>
+            );
+          }}
+        />
+      ) : (
+        <Table<Load>
+          rowKey="id"
+          columns={columns}
+          dataSource={data?.data ?? []}
+          loading={isLoading || isFetching}
+          scroll={{ x: 1100 }}
+          pagination={{
+            current: page,
+            pageSize: limit,
+            total: data?.total ?? 0,
+            showSizeChanger: true,
+            onChange: (p, ps) => {
+              setPage(p);
+              setLimit(ps);
+            },
+          }}
+        />
+      )}
 
       <CreateLoadModal open={createOpen} onClose={() => setCreateOpen(false)} />
       <EditLoadModal

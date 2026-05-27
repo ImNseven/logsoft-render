@@ -31,6 +31,8 @@ import { vehiclesApi } from '../../api/vehicles.api';
 import { useAuthStore } from '../../store/useAuthStore';
 import EditVehicleModal from '../../components/vehicles/EditVehicleModal';
 import UploadDocumentModal from '../../components/vehicles/UploadDocumentModal';
+import MobileCardList from '../../components/common/MobileCardList';
+import { useIsMobile } from '../../hooks/useIsMobile';
 import { DOC_TYPE_LABELS } from '../../components/vehicles/docTypes';
 import type { VehicleDocument } from '../../types/vehicles.types';
 
@@ -47,6 +49,7 @@ export default function VehicleDetailPage() {
   const { data: vehicle, isLoading, isError } = useVehicle(id);
   const { data: documents, isLoading: docsLoading } = useVehicleDocuments(id);
   const qc = useQueryClient();
+  const isMobile = useIsMobile();
 
   const [editOpen, setEditOpen] = useState(false);
   const [uploadOpen, setUploadOpen] = useState(false);
@@ -299,14 +302,57 @@ export default function VehicleDetailPage() {
           )}
         </div>
 
-        <Table<VehicleDocument>
-          rowKey="id"
-          columns={docColumns}
-          dataSource={documents ?? []}
-          loading={docsLoading}
-          pagination={false}
-          locale={{ emptyText: 'Документов пока нет' }}
-        />
+        {isMobile ? (
+          <MobileCardList<VehicleDocument>
+            items={documents ?? []}
+            rowKey={(d) => d.id}
+            loading={docsLoading}
+            emptyText="Документов пока нет"
+            renderCard={(r) => (
+              <Card styles={{ body: { padding: 14 } }} style={{ borderRadius: 12 }}>
+                <div style={{ marginBottom: 4 }}>
+                  <Typography.Text strong style={{ fontSize: 14 }}>
+                    {DOC_TYPE_LABELS[r.docType] ?? r.docType}
+                  </Typography.Text>
+                </div>
+                <div style={{ fontSize: 13, color: '#666', marginBottom: 4, wordBreak: 'break-all' }}>
+                  {r.fileName}
+                </div>
+                <div style={{ fontSize: 12, color: '#999', marginBottom: 10 }}>
+                  {dayjs(r.createdAt).format('DD.MM.YYYY HH:mm')}
+                </div>
+                <Space style={{ width: '100%' }} size={8}>
+                  <Button style={{ flex: 1 }} block icon={<DownloadOutlined />} onClick={() => handleDownload(r.id)}>
+                    Скачать
+                  </Button>
+                  {canDelete && (
+                    <Popconfirm
+                      title="Удалить документ?"
+                      okText="Да"
+                      cancelText="Нет"
+                      okButtonProps={{ danger: true }}
+                      onConfirm={() => deleteDocMutation.mutate(r.id)}
+                    >
+                      <Button style={{ flex: 1 }} block danger icon={<DeleteOutlined />}>
+                        Удалить
+                      </Button>
+                    </Popconfirm>
+                  )}
+                </Space>
+              </Card>
+            )}
+          />
+        ) : (
+          <Table<VehicleDocument>
+            rowKey="id"
+            columns={docColumns}
+            dataSource={documents ?? []}
+            loading={docsLoading}
+            pagination={false}
+            scroll={{ x: 700 }}
+            locale={{ emptyText: 'Документов пока нет' }}
+          />
+        )}
       </Card>
 
       <EditVehicleModal

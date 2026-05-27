@@ -8,7 +8,7 @@ export function useIsMobile(): boolean {
 export function useResponsiveModalWidth(desktop: number | string = 520) {
   const isMobile = useIsMobile();
   return {
-    width: isMobile ? '100%' : desktop,
-    style: isMobile ? { top: 0, maxWidth: '100vw', margin: 0, padding: 0 } : undefined,
+    width: isMobile ? 'calc(100vw - 24px)' : desktop,
+    centered: isMobile,
   };
 }

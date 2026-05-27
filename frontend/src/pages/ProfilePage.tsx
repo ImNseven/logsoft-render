@@ -3,6 +3,7 @@ import { Descriptions, Button, Modal, Form, Input, message, Tag, Typography } fr
 import { EditOutlined } from '@ant-design/icons';
 import { useAuthStore } from '../store/useAuthStore';
 import { usersApi } from '../api/users.api';
+import { useResponsiveModalWidth } from '../hooks/useIsMobile';
 
 const { Title } = Typography;
 
@@ -17,6 +18,7 @@ export default function ProfilePage() {
   const [modalOpen, setModalOpen] = useState(false);
   const [saving, setSaving] = useState(false);
   const [form] = Form.useForm();
+  const modalSize = useResponsiveModalWidth();
 
   const openEdit = () => {
     form.setFieldsValue({
@@ -76,6 +78,7 @@ export default function ProfilePage() {
         confirmLoading={saving}
         okText="Сохранить"
         cancelText="Отмена"
+        {...modalSize}
       >
         <Form form={form} layout="vertical">
           <Form.Item label="ФИО" name="full_name">

@@ -1,0 +1,87 @@
+html,
+body,
+#root {
+  height: 100%;
+}
+
+body {
+  margin: 0;
+  -webkit-tap-highlight-color: transparent;
+  -webkit-text-size-adjust: 100%;
+  background: #1677ff;
+}
+
+.ant-layout-header {
+  padding-top: env(safe-area-inset-top) !important;
+  padding-left: calc(16px + env(safe-area-inset-left)) !important;
+  padding-right: calc(16px + env(safe-area-inset-right)) !important;
+  height: calc(64px + env(safe-area-inset-top)) !important;
+  line-height: 64px !important;
+}
+
+.ant-layout-sider,
+.ant-drawer-body {
+  padding-bottom: env(safe-area-inset-bottom) !important;
+}
+
+.ant-layout-content {
+  padding-left: env(safe-area-inset-left);
+  padding-right: env(safe-area-inset-right);
+  padding-bottom: env(safe-area-inset-bottom);
+}
+
+@media (max-width: 767px) {
+  input,
+  textarea,
+  select,
+  .ant-input,
+  .ant-input-password input,
+  .ant-input-number-input,
+  .ant-select-selection-search-input,
+  .ant-picker-input > input {
+    font-size: 16px !important;
+  }
+
+  .ant-card > .ant-card-body {
+    padding: 12px !important;
+  }
+
+  .ant-descriptions-item-label,
+  .ant-descriptions-item-content {
+    padding: 8px 12px !important;
+  }
+
+  .ant-modal-content {
+    border-radius: 14px !important;
+  }
+}
+
+.mobile-filters .ant-select,
+.mobile-filters .ant-input,
+.mobile-filters .ant-input-affix-wrapper,
+.mobile-filters .ant-picker {
+  width: 100% !important;
+}
+
+.mobile-filters > .ant-space-item {
+  width: 100%;
+}
+
+.floating-filter-drawer .ant-drawer-content-wrapper {
+  bottom: calc(12px + env(safe-area-inset-bottom)) !important;
+  left: calc(12px + env(safe-area-inset-left)) !important;
+  right: calc(12px + env(safe-area-inset-right)) !important;
+  width: auto !important;
+  max-width: none !important;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.18) !important;
+  border-radius: 16px;
+  overflow: hidden;
+}
+
+.floating-filter-drawer .ant-drawer-content {
+  border-radius: 16px !important;
+}
+
+.floating-filter-drawer .ant-drawer-body {
+  padding-bottom: 16px !important;
+}
