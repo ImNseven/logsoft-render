@@ -88,11 +88,25 @@ export default function UploadQrModal({ open, onClose, paymentId, dealId }: Prop
             fileList={fileList}
             onChange={({ fileList: fl }) => setFileList(fl.slice(-1))}
             onRemove={() => setFileList([])}
+            style={{ width: '100%' }}
           >
-            <button type="button" style={{ background: 'transparent', border: '1px dashed #d9d9d9', padding: '6px 12px', cursor: 'pointer' }}>
-              <UploadOutlined /> Выбрать файл (PNG, JPG, PDF, до 5 МБ)
+            <button
+              type="button"
+              style={{
+                width: '100%',
+                background: 'transparent',
+                border: '1px dashed #d9d9d9',
+                padding: '8px 12px',
+                cursor: 'pointer',
+                borderRadius: 6,
+              }}
+            >
+              <UploadOutlined /> Выбрать файл
             </button>
           </Upload>
+          <div style={{ marginTop: 4, fontSize: 12, color: '#999' }}>
+            PNG, JPG, PDF · до 5 МБ
+          </div>
         </Form.Item>
       </Form>
     </Modal>

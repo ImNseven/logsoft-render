@@ -88,9 +88,15 @@ export default function UploadDocumentModal({ open, vehicleId, onClose }: Props)
             maxCount={1}
             beforeUpload={() => false}
             listType="text"
+            style={{ width: '100%' }}
           >
-            <Button icon={<UploadOutlined />}>Выбрать файл (PDF/JPG/PNG/HEIC, до 20 MB)</Button>
+            <Button icon={<UploadOutlined />} block style={{ whiteSpace: 'normal', height: 'auto', padding: '8px 12px' }}>
+              Выбрать файл
+            </Button>
           </Upload>
+          <div style={{ marginTop: 4, fontSize: 12, color: '#999' }}>
+            PDF, JPG, PNG, HEIC · до 20 МБ
+          </div>
         </Form.Item>
       </Form>
     </Modal>

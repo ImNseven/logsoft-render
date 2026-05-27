@@ -6,6 +6,7 @@ body,
 
 html {
   background: #f0f2f5;
+  overflow-x: hidden;
 }
 
 body {
@@ -14,6 +15,7 @@ body {
   -webkit-text-size-adjust: 100%;
   background: #f0f2f5;
   overscroll-behavior-y: none;
+  overflow-x: hidden;
 }
 
 .ant-layout-header {

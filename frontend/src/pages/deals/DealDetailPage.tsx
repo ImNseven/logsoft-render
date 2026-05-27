@@ -40,6 +40,7 @@ import VehicleInfoCard from '../../components/deals/VehicleInfoCard';
 import PaymentBlock from '../../components/deals/PaymentBlock';
 import DealDocumentsList from '../../components/deals/DealDocumentsList';
 import ReplaceVehicleModal from '../../components/deals/ReplaceVehicleModal';
+import { useIsMobile } from '../../hooks/useIsMobile';
 
 const { Title, Text } = Typography;
 
@@ -48,6 +49,7 @@ export default function DealDetailPage() {
   const navigate = useNavigate();
   const user = useAuthStore((s) => s.user);
   const qc = useQueryClient();
+  const isMobile = useIsMobile();
 
   const [replaceOpen, setReplaceOpen] = useState(false);
 
@@ -137,9 +139,10 @@ export default function DealDetailPage() {
           style={{
             display: 'flex',
             justifyContent: 'space-between',
-            alignItems: 'center',
+            alignItems: isMobile ? 'stretch' : 'center',
             marginBottom: 16,
             gap: 12,
+            flexDirection: isMobile ? 'column' : 'row',
             flexWrap: 'wrap',
           }}
         >
@@ -147,11 +150,16 @@ export default function DealDetailPage() {
             <Button icon={<ArrowLeftOutlined />} onClick={() => navigate('/deals')}>
               Назад
             </Button>
-            <Title level={3} style={{ margin: 0 }}>Сделка #{deal.id.slice(0, 8)}</Title>
+            <Title level={isMobile ? 4 : 3} style={{ margin: 0 }}>Сделка #{deal.id.slice(0, 8)}</Title>
             <Tag color={dealStatusColor(deal.status)}>{dealStatusLabel(deal.status)}</Tag>
             <Text type="secondary">от {dayjs(deal.createdAt).format('DD.MM.YYYY')}</Text>
           </Space>
-          <Space wrap>
+          <Space
+            wrap={!isMobile}
+            direction={isMobile ? 'vertical' : 'horizontal'}
+            style={isMobile ? { width: '100%' } : undefined}
+            size={isMobile ? 8 : undefined}
+          >
             {showConfirm && (
               <Popconfirm
                 title="Подтвердить оплату?"
@@ -159,7 +167,7 @@ export default function DealDetailPage() {
                 cancelText="Нет"
                 onConfirm={() => confirmMutation.mutate()}
               >
-                <Button type="primary" icon={<CheckCircleOutlined />} loading={confirmMutation.isPending}>
+                <Button block={isMobile} type="primary" icon={<CheckCircleOutlined />} loading={confirmMutation.isPending}>
                   Подтвердить оплату
                 </Button>
               </Popconfirm>
@@ -172,13 +180,13 @@ export default function DealDetailPage() {
                 cancelText="Нет"
                 onConfirm={() => revealMutation.mutate()}
               >
-                <Button type="primary" icon={<EyeOutlined />} loading={revealMutation.isPending}>
+                <Button block={isMobile} type="primary" icon={<EyeOutlined />} loading={revealMutation.isPending}>
                   Раскрыть документы
                 </Button>
               </Popconfirm>
             )}
             {showReplace && (
-              <Button icon={<SwapOutlined />} onClick={() => setReplaceOpen(true)}>
+              <Button block={isMobile} icon={<SwapOutlined />} onClick={() => setReplaceOpen(true)}>
                 Заменить машину
               </Button>
             )}
@@ -191,7 +199,7 @@ export default function DealDetailPage() {
                 okButtonProps={{ danger: true }}
                 onConfirm={() => cancelMutation.mutate()}
               >
-                <Button danger icon={<StopOutlined />} loading={cancelMutation.isPending}>
+                <Button block={isMobile} danger icon={<StopOutlined />} loading={cancelMutation.isPending}>
                   Отменить сделку
                 </Button>
               </Popconfirm>
