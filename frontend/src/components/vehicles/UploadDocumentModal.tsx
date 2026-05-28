@@ -15,8 +15,10 @@ interface Props {
 
 interface FormValues {
   docType: DocType;
-  file: { fileList: UploadFile[] };
+  file: UploadFile[];
 }
+
+const normFile = (e: any): UploadFile[] => (Array.isArray(e) ? e : e?.fileList ?? []);
 
 export default function UploadDocumentModal({ open, vehicleId, onClose }: Props) {
   const [form] = Form.useForm<FormValues>();
@@ -44,7 +46,7 @@ export default function UploadDocumentModal({ open, vehicleId, onClose }: Props)
 
   const handleOk = async () => {
     const values = await form.validateFields();
-    const file = values.file?.fileList?.[0]?.originFileObj as File | undefined;
+    const file = values.file?.[0]?.originFileObj as File | undefined;
     if (!file) {
       message.error('Выберите файл');
       return;
@@ -80,8 +82,9 @@ export default function UploadDocumentModal({ open, vehicleId, onClose }: Props)
           label="Файл"
           name="file"
           rules={[{ required: true, message: 'Выберите файл' }]}
-          valuePropName="value"
-          getValueFromEvent={(e) => e}
+          valuePropName="fileList"
+          getValueFromEvent={normFile}
+          extra="PDF, JPG, PNG, HEIC · до 20 МБ"
         >
           <Upload
             accept=".pdf,.jpg,.jpeg,.png,.heic"
@@ -94,9 +97,6 @@ export default function UploadDocumentModal({ open, vehicleId, onClose }: Props)
               Выбрать файл
             </Button>
           </Upload>
-          <div style={{ marginTop: 4, fontSize: 12, color: '#999' }}>
-            PDF, JPG, PNG, HEIC · до 20 МБ
-          </div>
         </Form.Item>
       </Form>
     </Modal>
